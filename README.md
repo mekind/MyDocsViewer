@@ -33,4 +33,5 @@ MD_ROOT=/path/to/docs python3 server.py
 - [`docs/architecture.md`](./docs/architecture.md) — 서버 구조, 요청 흐름, 보안 가드
 - [`docs/design-system.md`](./docs/design-system.md) — Apple 토큰 매핑 (컬러/타입/컴포넌트)
 - [`docs/features.md`](./docs/features.md) — 툴바 컨트롤과 키 동작
+- [`docs/search-matching.md`](./docs/search-matching.md) — 파일명 fuzzy 매칭 알고리즘과 점수 모델
 - [`docs/development-history.md`](./docs/development-history.md) — 빌드된 순서와 결정 기록
