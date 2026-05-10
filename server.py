@@ -175,6 +175,152 @@ INDEX_HTML = """<!doctype html>
   .tree a.active .icon { color: #ffffff; }
   .tree .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+  /* Sidebar search */
+  #sidebar-search {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--content-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 9999px;
+    padding: 6px 12px;
+    margin: 0 0 14px;
+    transition: border-color 0.12s ease;
+    cursor: text;
+  }
+  #sidebar-search:focus-within { border-color: var(--accent); }
+  #sidebar-search .icon { color: var(--muted); flex-shrink: 0; }
+  #sidebar-search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--fg);
+    font: inherit;
+    font-size: var(--sidebar-font);
+    letter-spacing: -0.01em;
+    min-width: 0;
+  }
+  #sidebar-search input::placeholder { color: var(--muted); }
+  #sidebar-search kbd {
+    font: inherit;
+    font-size: calc(var(--sidebar-font) - 1px);
+    color: var(--muted);
+    background: var(--divider-soft);
+    border-radius: 4px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+  }
+
+  /* Search modal */
+  #search-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 120px;
+    z-index: 100;
+  }
+  #search-overlay.open { display: flex; }
+  #search-modal {
+    width: 600px;
+    max-width: calc(100vw - 32px);
+    max-height: calc(100vh - 200px);
+    background: var(--content-bg);
+    border: 1px solid var(--hairline);
+    border-radius: 18px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: rgba(0, 0, 0, 0.22) 3px 5px 30px 0;
+    font-size: 15px;
+    letter-spacing: -0.01em;
+  }
+  #search-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--hairline);
+  }
+  #search-modal-header .icon { color: var(--muted); flex-shrink: 0; }
+  #search-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--fg);
+    font: inherit;
+    font-size: 17px;
+    letter-spacing: -0.022em;
+    min-width: 0;
+  }
+  #search-input::placeholder { color: var(--muted); }
+  #search-results {
+    overflow-y: auto;
+    padding: 6px;
+    flex: 1;
+  }
+  #search-results .empty-state {
+    padding: 32px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .search-result {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 11px;
+    cursor: pointer;
+  }
+  .search-result .icon { color: var(--muted); flex-shrink: 0; }
+  .search-result .name {
+    flex-shrink: 0;
+    color: var(--fg);
+  }
+  .search-result .name mark {
+    background: transparent;
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .search-result .path {
+    color: var(--muted);
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .search-result.active {
+    background: var(--accent);
+    color: #ffffff;
+  }
+  .search-result.active .icon,
+  .search-result.active .name,
+  .search-result.active .path { color: #ffffff; }
+  .search-result.active .name mark { color: #ffffff; text-decoration: underline; }
+  #search-modal-footer {
+    display: flex;
+    gap: 16px;
+    padding: 10px 18px;
+    border-top: 1px solid var(--hairline);
+    color: var(--muted);
+    font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+  #search-modal-footer kbd {
+    font: inherit;
+    font-size: 11px;
+    background: var(--divider-soft);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--fg);
+  }
+
   /* Toolbar */
   #content-wrap { flex: 1; overflow: auto; background: var(--content-bg); }
   #toolbar {
@@ -303,7 +449,26 @@ INDEX_HTML = """<!doctype html>
 <body>
 <div id="sidebar">
   <h3>%ROOT%</h3>
+  <label id="sidebar-search" for="sidebar-search-input">
+    <svg class="icon" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 L14 14"/></svg>
+    <input id="sidebar-search-input" type="text" placeholder="Search files…" autocomplete="off" spellcheck="false" />
+    <kbd>⌘K</kbd>
+  </label>
   <div id="tree" class="tree"></div>
+</div>
+<div id="search-overlay" role="dialog" aria-modal="true">
+  <div id="search-modal">
+    <div id="search-modal-header">
+      <svg class="icon" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 L14 14"/></svg>
+      <input id="search-input" type="text" placeholder="Search files by name…" autocomplete="off" spellcheck="false" />
+    </div>
+    <div id="search-results"></div>
+    <div id="search-modal-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> 이동</span>
+      <span><kbd>Enter</kbd> 열기</span>
+      <span><kbd>Esc</kbd> 닫기</span>
+    </div>
+  </div>
 </div>
 <div id="content-wrap">
   <div id="toolbar">
@@ -381,12 +546,26 @@ async function renderMermaid() {
     }
   }
 }
+let __flatFiles = [];
+function flattenTree(node, acc) {
+  for (const child of node.children || []) {
+    if (child.type === 'dir') {
+      flattenTree(child, acc);
+    } else {
+      const path = child.path;
+      const i = path.lastIndexOf('/');
+      acc.push({ name: child.name, path, dir: i >= 0 ? path.slice(0, i) : '' });
+    }
+  }
+  return acc;
+}
 async function loadTree() {
   const r = await fetch('/api/tree');
   const data = await r.json();
   const tree = document.getElementById('tree');
   tree.innerHTML = '';
   tree.appendChild(renderNode(data, true));
+  __flatFiles = flattenTree(data, []);
 }
 const ICON_CHEVRON = '<svg class="chevron" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 1.5 L7 5 L3.5 8.5"/></svg>';
 const ICON_FOLDER_CLOSED = '<svg class="icon icon-folder-closed" width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 4.5A1.5 1.5 0 0 1 3 3h3.5l1.5 1.5H13a1.5 1.5 0 0 1 1.5 1.5v6A1.5 1.5 0 0 1 13 13.5H3A1.5 1.5 0 0 1 1.5 12V4.5z"/></svg>';
@@ -488,6 +667,158 @@ document.getElementById('refresh-btn').onclick = async () => {
   }
   setTimeout(() => { btn.textContent = orig; btn.disabled = false; }, 800);
 };
+
+// ----- Filename search -----
+function fuzzyScore(name, query) {
+  if (!query) return { score: 0, indices: [] };
+  const n = name.toLowerCase();
+  const q = query.toLowerCase();
+  const indices = [];
+  let qi = 0;
+  let score = 0;
+  let prevMatch = -2;
+  for (let i = 0; i < n.length && qi < q.length; i++) {
+    if (n[i] === q[qi]) {
+      indices.push(i);
+      let bonus = 1;
+      if (i === prevMatch + 1) bonus += 8;
+      const prev = i > 0 ? n[i - 1] : '';
+      if (prev === '' || prev === '/' || prev === '-' || prev === '_' || prev === '.' || prev === ' ') bonus += 5;
+      if (i === 0) bonus += 5;
+      score += bonus;
+      prevMatch = i;
+      qi++;
+    }
+  }
+  if (qi < q.length) return null;
+  score -= n.length * 0.05;
+  return { score, indices };
+}
+function searchFiles(query) {
+  const trimmed = query.trim();
+  if (!trimmed) return __flatFiles.slice(0, 50).map(f => ({ ...f, indices: [] }));
+  const out = [];
+  for (const f of __flatFiles) {
+    const r = fuzzyScore(f.name, trimmed);
+    if (r) out.push({ ...f, score: r.score, indices: r.indices });
+  }
+  out.sort((a, b) => b.score - a.score);
+  return out.slice(0, 50);
+}
+function highlightName(name, indices) {
+  if (!indices.length) { const span = document.createElement('span'); span.textContent = name; return span; }
+  const frag = document.createDocumentFragment();
+  let last = 0;
+  const set = new Set(indices);
+  for (let i = 0; i < name.length; i++) {
+    if (set.has(i)) {
+      if (i > last) frag.appendChild(document.createTextNode(name.slice(last, i)));
+      const m = document.createElement('mark');
+      m.textContent = name[i];
+      frag.appendChild(m);
+      last = i + 1;
+    }
+  }
+  if (last < name.length) frag.appendChild(document.createTextNode(name.slice(last)));
+  return frag;
+}
+
+const FILE_ICON_SVG = '<svg class="icon" width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"><path d="M3.5 1.5h6L13 5v9.5H3.5z"/><path d="M9.5 1.5V5H13"/></svg>';
+let __searchActive = 0;
+let __searchResults = [];
+
+function renderSearchResults(query) {
+  const list = document.getElementById('search-results');
+  __searchResults = searchFiles(query);
+  __searchActive = 0;
+  list.innerHTML = '';
+  if (!__searchResults.length) {
+    const empty = document.createElement('div');
+    empty.className = 'empty-state';
+    empty.textContent = query ? '검색 결과가 없습니다' : '파일이 없습니다';
+    list.appendChild(empty);
+    return;
+  }
+  __searchResults.forEach((f, i) => {
+    const row = document.createElement('div');
+    row.className = 'search-result' + (i === 0 ? ' active' : '');
+    row.dataset.index = i;
+    row.innerHTML = FILE_ICON_SVG;
+    const nameEl = document.createElement('span');
+    nameEl.className = 'name';
+    nameEl.appendChild(highlightName(f.name, f.indices));
+    row.appendChild(nameEl);
+    const pathEl = document.createElement('span');
+    pathEl.className = 'path';
+    pathEl.textContent = f.dir || '(root)';
+    row.appendChild(pathEl);
+    row.onmouseenter = () => setActiveResult(i);
+    row.onclick = () => openResult(i);
+    list.appendChild(row);
+  });
+}
+function setActiveResult(i) {
+  const items = document.querySelectorAll('#search-results .search-result');
+  if (!items.length) return;
+  __searchActive = (i + items.length) % items.length;
+  items.forEach((el, idx) => el.classList.toggle('active', idx === __searchActive));
+  const el = items[__searchActive];
+  if (el) el.scrollIntoView({ block: 'nearest' });
+}
+function openResult(i) {
+  if (typeof i === 'number') __searchActive = i;
+  const f = __searchResults[__searchActive];
+  if (!f) return;
+  closeSearch();
+  location.hash = encodeURIComponent(f.path);
+}
+function openSearch(seed) {
+  const overlay = document.getElementById('search-overlay');
+  const input = document.getElementById('search-input');
+  overlay.classList.add('open');
+  input.value = seed || '';
+  renderSearchResults(input.value);
+  setTimeout(() => input.focus(), 0);
+}
+function closeSearch() {
+  const overlay = document.getElementById('search-overlay');
+  overlay.classList.remove('open');
+  document.getElementById('sidebar-search-input').value = '';
+}
+
+document.getElementById('search-input').addEventListener('input', (e) => {
+  renderSearchResults(e.target.value);
+});
+document.getElementById('search-input').addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowDown') { e.preventDefault(); setActiveResult(__searchActive + 1); }
+  else if (e.key === 'ArrowUp') { e.preventDefault(); setActiveResult(__searchActive - 1); }
+  else if (e.key === 'Enter') { e.preventDefault(); openResult(); }
+  else if (e.key === 'Escape') { e.preventDefault(); closeSearch(); }
+});
+document.getElementById('search-overlay').addEventListener('click', (e) => {
+  if (e.target.id === 'search-overlay') closeSearch();
+});
+document.getElementById('sidebar-search-input').addEventListener('focus', (e) => {
+  openSearch(e.target.value);
+});
+document.getElementById('sidebar-search-input').addEventListener('input', (e) => {
+  if (!document.getElementById('search-overlay').classList.contains('open')) {
+    openSearch(e.target.value);
+  } else {
+    document.getElementById('search-input').value = e.target.value;
+    renderSearchResults(e.target.value);
+  }
+});
+window.addEventListener('keydown', (e) => {
+  const isMod = e.metaKey || e.ctrlKey;
+  if (isMod && (e.key === 'k' || e.key === 'K')) {
+    e.preventDefault();
+    if (document.getElementById('search-overlay').classList.contains('open')) closeSearch();
+    else openSearch();
+  } else if (e.key === 'Escape' && document.getElementById('search-overlay').classList.contains('open')) {
+    closeSearch();
+  }
+});
 
 window.addEventListener('hashchange', loadFile);
 loadTree().then(loadFile);

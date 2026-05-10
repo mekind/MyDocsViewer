@@ -12,6 +12,7 @@ MD_ROOT=/path/to/docs python3 server.py
 ## 핵심 기능
 
 - 임의 디렉토리(`MD_ROOT`)의 `.md` / `.markdown`을 트리로 탐색
+- 파일명 **fuzzy 검색** — ⌘K/Ctrl+K 모달 + 사이드바 input (둘 다 같은 모달)
 - Mermaid 다이어그램 렌더
 - 본문 폭 / 본문 글꼴 크기 / 사이드바 글꼴 크기 / 테마(배경) / 새로고침 토글 — 모두 `localStorage`에 저장
 - Apple 디자인 토큰 기반 UI (Action Blue 단일 액센트, SF Pro Display/Text, pill 버튼, 단일 product-shadow)
