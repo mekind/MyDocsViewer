@@ -843,6 +843,8 @@ def build_tree(base: Path):
                 continue
             if e.is_dir() and e.name in IGNORED_DIRS:
                 continue
+            if e.is_dir() and (e / ".git").is_file():
+                continue
             if e.is_dir():
                 child = walk(e)
                 if child["children"]:
